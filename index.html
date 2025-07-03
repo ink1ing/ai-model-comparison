@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI模型能力对比分析工具</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>主流AI模型能力对比</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --light-bg: #f8f9fa;
-            --dark-bg: #1a1a1a;
-            --card-bg: #ffffff;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
             --text-primary: #2c3e50;
             --text-secondary: #7f8c8d;
             --border-color: #e9ecef;
+            --primary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
             --shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         [data-theme="dark"] {
-            --light-bg: #0d1117;
-            --dark-bg: #21262d;
-            --card-bg: #161b22;
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
             --text-primary: #f0f6fc;
             --text-secondary: #8b949e;
             --border-color: #30363d;
@@ -39,29 +38,20 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: var(--light-bg);
+            background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
-            padding: 10px;
+            padding: 20px;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: var(--card-bg);
+            background: var(--bg-card);
             border-radius: 12px;
             box-shadow: var(--shadow);
-            padding: 15px;
+            padding: 30px;
             border: 1px solid var(--border-color);
-        }
-
-        @media (min-width: 768px) {
-            body {
-                padding: 20px;
-            }
-            .container {
-                padding: 30px;
-            }
         }
 
         .header {
@@ -71,7 +61,7 @@
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: 32px;
             margin-bottom: 10px;
             background: linear-gradient(135deg, var(--primary-color), var(--success-color));
             -webkit-background-clip: text;
@@ -97,7 +87,7 @@
         }
 
         .github-link:hover {
-            background: var(--secondary-color);
+            background: var(--success-color);
             transform: translateY(-2px);
         }
 
@@ -108,27 +98,15 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s ease;
-            min-height: 44px;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        @media (min-width: 768px) {
-            .theme-toggle {
-                padding: 10px 16px;
-                font-size: 16px;
-            }
         }
 
         .theme-toggle:hover {
-            background: var(--secondary-color);
+            background: var(--success-color);
             transform: translateY(-2px);
         }
 
@@ -145,7 +123,7 @@
             padding-left: 12px;
         }
 
-        .version-selector {
+        .version-toggle {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
@@ -161,10 +139,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .version-btn.active {
@@ -179,7 +153,7 @@
 
         .dimensions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -192,7 +166,7 @@
             border: 2px solid var(--border-color);
             border-radius: 8px;
             transition: all 0.3s ease;
-            background: var(--card-bg);
+            background: var(--bg-card);
         }
 
         .dimension-item:hover {
@@ -227,18 +201,12 @@
 
         .chart-container {
             position: relative;
-            height: 400px;
+            height: 500px;
             margin: 20px 0;
-            background: var(--card-bg);
+            background: var(--bg-card);
             border-radius: 8px;
             padding: 20px;
             border: 1px solid var(--border-color);
-        }
-
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 500px;
-            }
         }
 
         .legend {
@@ -253,20 +221,18 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 12px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 14px;
-            min-height: 44px;
+            border: 1px solid var(--border-color);
         }
 
         .legend-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-color: var(--primary-color);
         }
 
         .legend-color {
@@ -283,65 +249,98 @@
         }
 
         .stat-card {
-            background: var(--card-bg);
+            background: var(--bg-secondary);
             padding: 20px;
             border-radius: 8px;
             text-align: center;
             border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .stat-card h3 {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0 0 10px 0;
+            font-size: 16px;
         }
 
         .stat-value {
             font-size: 24px;
-            font-weight: 700;
+            font-weight: bold;
             color: var(--primary-color);
         }
 
         .result-section {
-            background: linear-gradient(135deg, var(--primary-color)10, var(--success-color)10);
+            background: var(--bg-secondary);
             padding: 20px;
             border-radius: 8px;
             text-align: center;
             border: 1px solid var(--border-color);
-            margin: 20px 0;
         }
 
         .winner-model {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
         }
 
         .winner-score {
-            font-size: 16px;
-            color: var(--text-secondary);
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        @media (max-width: 768px) {
+            .result-section {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .chart-container {
+                height: 400px;
+                padding: 15px;
+            }
+            
+            .dimensions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .theme-toggle {
+                position: static;
+                margin: 10px auto 20px;
+                width: fit-content;
+            }
+            
+            .header {
+                text-align: center;
+            }
         }
 
         .data-sources {
-            background: var(--card-bg);
+            background: var(--bg-secondary);
             padding: 20px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             margin-top: 30px;
         }
 
+        .sources-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
         .sources-links {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 15px;
         }
 
         .sources-links a {
@@ -373,29 +372,6 @@
                 text-align: center;
                 padding: 12px;
             }
-            .header h1 {
-                font-size: 24px;
-            }
-            .section-title {
-                font-size: 18px;
-            }
-            .chart-container {
-                padding: 15px;
-            }
-            .theme-toggle {
-                position: static;
-                margin: 10px auto 20px;
-                width: fit-content;
-            }
-            .header {
-                text-align: center;
-            }
-            .dimensions-grid {
-                grid-template-columns: 1fr;
-            }
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
         }
     </style>
 </head>
@@ -403,7 +379,7 @@
     <div class="container">
         <div class="header">
             <button class="theme-toggle" onclick="toggleTheme()">🌙 深色模式</button>
-            <h1>🤖 AI模型能力对比分析工具</h1>
+            <h1>🤖 主流AI模型能力对比</h1>
             <p>基于真实使用体验的多维度AI模型能力评估</p>
             <a href="https://github.com/ink1ing/ai-model-comparison" target="_blank" class="github-link">📂 GitHub 仓库</a>
         </div>
@@ -411,15 +387,15 @@
         <!-- 1️⃣ 版本选择 -->
         <div class="section">
             <div class="section-title">1️⃣ 选择对比版本</div>
-            <div class="version-selector">
-                <button class="version-btn active" data-version="free">免费版本对比</button>
-                <button class="version-btn" data-version="paid">付费版本对比</button>
+            <div class="version-toggle">
+                <button class="version-btn active" data-version="free">免费版</button>
+                <button class="version-btn" data-version="paid">付费版</button>
             </div>
         </div>
 
         <!-- 2️⃣ 评估维度选择 -->
         <div class="section">
-            <div class="section-title">2️⃣ 选择评估维度（至少选择3项）</div>
+            <div class="section-title">2️⃣ 评估维度选择（请至少选择三项）</div>
             <div class="dimensions-grid" id="dimensionsGrid">
                 <!-- 动态生成 -->
             </div>
@@ -430,41 +406,47 @@
             <div class="section-title">3️⃣ 模型选择（按各家最强模型）</div>
             <div class="legend" id="legend"></div>
         </div>
-
-        <!-- 4️⃣ 雷达图对比 -->
-        <div class="section">
-            <div class="section-title">4️⃣ 能力雷达图对比</div>
-            <div class="chart-container">
-                <canvas id="radarChart"></canvas>
-            </div>
+        
+        <div class="chart-container">
+            <canvas id="radarChart"></canvas>
         </div>
 
-        <!-- 5️⃣ 统计信息 -->
+        <!-- 统计信息 -->
         <div class="section">
-            <div class="section-title">5️⃣ 统计信息</div>
+            <div class="section-title">📊 统计信息</div>
             <div class="stats-grid" id="statsGrid"></div>
         </div>
 
-        <!-- 6️⃣ 分析结果 -->
+        <!-- 分析结果 -->
         <div class="section">
-            <div class="section-title">6️⃣ 综合分析结果</div>
+            <div class="section-title">🏆 综合分析结果</div>
             <div class="result-section" id="resultContent">
-                请选择评估维度和模型进行对比分析...
+                <!-- 动态生成 -->
             </div>
         </div>
 
-        <!-- 数据来源 -->
+        <!-- 模型官网 -->
         <div class="data-sources">
-            <div class="section-title">📊 数据来源说明</div>
-            <p style="margin-bottom: 15px; color: var(--text-secondary); line-height: 1.6;">评分基于个人实际使用体验，包括日常对话、代码编写、文档处理、创意写作等多场景测试。数据会根据模型更新持续调整，仅供参考。</p>
+            <div class="sources-title">模型官网：</div>
             <div class="sources-links">
-                <a href="https://openai.com" target="_blank">OpenAI官网</a>
-                <a href="https://claude.ai" target="_blank">Claude官网</a>
-                <a href="https://gemini.google.com" target="_blank">Gemini官网</a>
-                <a href="https://grok.x.ai" target="_blank">Grok官网</a>
-                <a href="https://perplexity.ai" target="_blank">Perplexity官网</a>
-                <a href="https://deepseek.com" target="_blank">DeepSeek官网</a>
-                <a href="https://doubao.com" target="_blank">豆包官网</a>
+                <a href="https://openai.com/" target="_blank">GPT (OpenAI)</a>
+                <a href="https://www.anthropic.com/" target="_blank">Claude (Anthropic)</a>
+                <a href="https://gemini.google.com/" target="_blank">Gemini (Google)</a>
+                <a href="https://grok.x.ai/" target="_blank">Grok (xAI)</a>
+                <a href="https://www.perplexity.ai/" target="_blank">Perplexity</a>
+                <a href="https://www.deepseek.com/" target="_blank">DeepSeek</a>
+                <a href="https://www.doubao.com/" target="_blank">Doubao (字节跳动)</a>
+            </div>
+        </div>
+
+        <!-- 测试数据来源 -->
+        <div class="data-sources">
+            <div class="sources-title">测试数据来源：</div>
+            <div class="sources-links">
+                <a href="https://mlcommons.org/en/" target="_blank">MLCommons</a>
+                <a href="https://crfm.stanford.edu/helm/" target="_blank">Stanford HELM</a>
+                <a href="https://chat.lmsys.org/" target="_blank">LMSYS Chatbot Arena</a>
+                <a href="https://paperswithcode.com/" target="_blank">Papers With Code</a>
             </div>
         </div>
     </div>
@@ -476,30 +458,30 @@
                 { key: 'multimodal', name: '多模态', desc: '处理文本、图像、音频等多种输入格式的综合能力' },
                 { key: 'performance', name: '性能测试', desc: '在标准化基准测试中的表现，包括推理、知识和语言能力' },
                 { key: 'usability', name: '易用性', desc: '用户界面友好度、响应速度和交互体验的综合评价' },
-                { key: 'search', name: '联网搜索', desc: '获取实时信息和最新数据的能力及准确性' },
-                { key: 'quota', name: '免费额度', desc: '免费用户的使用限制、功能限制和访问频率' },
+                { key: 'search', name: '搜索质量', desc: '实时信息检索准确性和联网搜索结果的相关性' },
+                { key: 'quota', name: '免费额度', desc: '免费用户每日可使用的消息数量和功能访问限制' },
                 { key: 'region', name: '可用地区', desc: '全球不同国家和地区的服务可访问性和稳定性' }
             ],
             paid: [
                 { key: 'multimodal', name: '多模态', desc: '处理文本、图像、音频等多种输入格式的综合能力' },
                 { key: 'performance', name: '性能测试', desc: '在标准化基准测试中的表现，包括推理、知识和语言能力' },
                 { key: 'usability', name: '易用性', desc: '用户界面友好度、响应速度和交互体验的综合评价' },
-                { key: 'search', name: '联网搜索', desc: '获取实时信息和最新数据的能力及准确性' },
+                { key: 'search', name: '搜索质量', desc: '实时信息检索准确性和联网搜索结果的相关性' },
                 { key: 'quota', name: '高级额度', desc: '付费用户的使用限制、高级功能访问和优先级支持' },
                 { key: 'region', name: '可用地区', desc: '全球不同国家和地区的服务可访问性和稳定性' }
             ]
         };
 
-        // AI模型数据
+        // 数据配置
         const aiData = {
             free: {
                 models: [
-                    { name: 'GPT', scores: [6, 7, 8, 6, 6, 7], color: '#FF6B6B' },
-                    { name: 'Claude', scores: [7, 7.5, 7.5, 7, 5, 5], color: '#4ECDC4' },
-                    { name: 'Gemini', scores: [7.5, 8, 7.5, 7.5, 8, 6], color: '#45B7D1' },
-                    { name: 'Grok', scores: [6, 7, 6, 7, 7, 6.5], color: '#96CEB4' },
-                    { name: 'Perplexity', scores: [6.5, 7.5, 7, 8.5, 7.5, 6.5], color: '#FFEAA7' },
-                    { name: 'DeepSeek', scores: [6.5, 8, 7, 5.5, 9, 9], color: '#DDA0DD' },
+                    { name: 'GPT', scores: [8, 8.5, 8, 7.5, 7.5, 7], color: '#FF6B6B' },
+                    { name: 'Claude', scores: [6.5, 7.5, 7, 7.5, 7, 5], color: '#4ECDC4' },
+                    { name: 'Gemini', scores: [7.5, 8.5, 7, 7, 8, 6], color: '#45B7D1' },
+                    { name: 'Grok', scores: [7, 8.5, 7, 7, 8, 6.5], color: '#96CEB4' },
+                    { name: 'Perplexity', scores: [6.5, 7, 7.5, 8, 8.5, 6.5], color: '#FFEAA7' },
+                    { name: 'DeepSeek', scores: [6, 8.5, 7, 5.5, 9, 9], color: '#DDA0DD' },
                     { name: 'Doubao', scores: [8, 6.5, 8.5, 5, 9, 9], color: '#F39C12' }
                 ]
             },
@@ -550,7 +532,12 @@
         // 切换维度
         function toggleDimension(key) {
             if (selectedDimensions.has(key)) {
-                selectedDimensions.delete(key);
+                if (selectedDimensions.size > 3) {
+                    selectedDimensions.delete(key);
+                } else {
+                    document.getElementById(`dim-${key}`).checked = true;
+                    return;
+                }
             } else {
                 selectedDimensions.add(key);
             }
@@ -559,56 +546,57 @@
             updateResultSection();
         }
 
-        // 渲染雷达图
+        // 渲染图表
         function renderChart() {
             const ctx = document.getElementById('radarChart').getContext('2d');
             const dimensions = dimensionDefinitions[currentVersion];
             const models = aiData[currentVersion].models;
             
             // 过滤选中的维度
-            const selectedDimArray = Array.from(selectedDimensions);
-            const labels = selectedDimArray.map(key => {
-                const dim = dimensions.find(d => d.key === key);
-                return dim ? dim.name : key;
-            });
+            const filteredDimensions = dimensions.filter(dim => selectedDimensions.has(dim.key));
+            const dimensionIndices = filteredDimensions.map(dim => dimensions.findIndex(d => d.key === dim.key));
             
+            const datasets = models.map(model => ({
+                label: model.name,
+                data: dimensionIndices.map(i => model.scores[i]),
+                backgroundColor: model.color + '20',
+                borderColor: model.color,
+                borderWidth: 2,
+                pointBackgroundColor: model.color,
+                pointBorderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#21262d' : '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.1
+            }));
+
             if (chart) {
                 chart.destroy();
             }
-            
-            const datasets = models.map(model => {
-                const filteredScores = selectedDimArray.map(key => {
-                    const dimIndex = dimensions.findIndex(d => d.key === key);
-                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
-                });
-                
-                return {
-                    label: model.name,
-                    data: filteredScores,
-                    borderColor: model.color,
-                    backgroundColor: model.color + '20',
-                    pointBackgroundColor: model.color,
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: model.color,
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                };
-            });
-            
+
             chart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: labels,
+                    labels: filteredDimensions.map(dim => dim.name),
                     datasets: datasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#fff',
+                            borderWidth: 1,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.r}/10`;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -618,35 +606,28 @@
                             min: 0,
                             ticks: {
                                 stepSize: 2,
-                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
-                                font: {
-                                    size: 12
-                                }
+                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#8b949e' : '#666',
+                                font: { size: 12 }
                             },
                             grid: {
-                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#30363d' : '#e0e0e0'
                             },
                             angleLines: {
-                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#30363d' : '#e0e0e0'
                             },
                             pointLabels: {
-                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
-                                font: {
-                                    size: 14,
-                                    weight: '500'
-                                }
+                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f0f6fc' : '#2c3e50',
+                                font: { size: 14, weight: 'bold' }
                             }
                         }
-                    },
-                    interaction: {
-                        intersect: false
                     }
                 }
             });
-
+            
             // 默认隐藏所有模型
-            chart.data.datasets.forEach((dataset, index) => {
-                chart.setDatasetVisibility(index, false);
+            models.forEach((_, index) => {
+                const meta = chart.getDatasetMeta(index);
+                meta.hidden = true;
             });
             chart.update();
         }
@@ -657,8 +638,10 @@
             const models = aiData[currentVersion].models;
             
             container.innerHTML = models.map((model, index) => {
-                const isVisible = chart ? chart.isDatasetVisible(index) : false;
+                const meta = chart ? chart.getDatasetMeta(index) : null;
+                const isVisible = meta ? !meta.hidden : false;
                 const opacity = isVisible ? '1' : '0.5';
+                
                 return `
                     <div class="legend-item" onclick="toggleModel(${index})" style="opacity: ${opacity}">
                         <div class="legend-color" style="background-color: ${model.color}"></div>
@@ -670,108 +653,75 @@
 
         // 切换模型显示
         function toggleModel(index) {
-            if (chart) {
-                const isVisible = chart.isDatasetVisible(index);
-                chart.setDatasetVisibility(index, !isVisible);
-                chart.update();
-                renderLegend();
-                renderStats();
-                updateResultSection();
-            }
+            const meta = chart.getDatasetMeta(index);
+            meta.hidden = !meta.hidden;
+            chart.update();
+            renderLegend();
+            renderStats();
+            updateResultSection();
         }
 
         // 渲染统计信息
         function renderStats() {
             const container = document.getElementById('statsGrid');
             const models = aiData[currentVersion].models;
-            const dimensions = dimensionDefinitions[currentVersion];
+            const selectedCount = selectedDimensions.size;
             
-            // 计算可见模型的统计信息
-            const visibleModels = models.filter((_, index) => chart ? chart.isDatasetVisible(index) : false);
-            const selectedDimArray = Array.from(selectedDimensions);
-            
-            if (visibleModels.length === 0) {
-                container.innerHTML = '<div class="stat-card"><h3>请选择模型</h3><div class="stat-value">-</div></div>';
-                return;
-            }
-            
-            // 计算平均分
-            const avgScores = visibleModels.map(model => {
-                const filteredScores = selectedDimArray.map(key => {
-                    const dimIndex = dimensions.findIndex(d => d.key === key);
-                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
-                });
-                const avg = filteredScores.reduce((a, b) => a + b, 0) / filteredScores.length;
-                return { name: model.name, avg: avg.toFixed(1) };
+            // 计算可见模型
+            const visibleModels = models.filter((_, index) => {
+                const meta = chart ? chart.getDatasetMeta(index) : null;
+                return meta ? !meta.hidden : false;
             });
             
-            // 找出最高分和最低分
-            const maxScore = Math.max(...avgScores.map(s => parseFloat(s.avg)));
-            const minScore = Math.min(...avgScores.map(s => parseFloat(s.avg)));
-            const maxModel = avgScores.find(s => parseFloat(s.avg) === maxScore);
-            const minModel = avgScores.find(s => parseFloat(s.avg) === minScore);
+            const stats = [
+                { label: '选择维度', value: selectedCount },
+                { label: '显示模型', value: visibleModels.length },
+                { label: '总模型数', value: models.length }
+            ];
             
-            container.innerHTML = `
+            container.innerHTML = stats.map(stat => `
                 <div class="stat-card">
-                    <h3>参与对比模型数</h3>
-                    <div class="stat-value">${visibleModels.length}</div>
+                    <h3>${stat.label}</h3>
+                    <div class="stat-value">${stat.value}</div>
                 </div>
-                <div class="stat-card">
-                    <h3>评估维度数</h3>
-                    <div class="stat-value">${selectedDimensions.size}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>最高平均分</h3>
-                    <div class="stat-value">${maxModel ? maxModel.avg : '-'}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>最低平均分</h3>
-                    <div class="stat-value">${minModel ? minModel.avg : '-'}</div>
-                </div>
-            `;
+            `).join('');
         }
 
-        // 更新结果区域
+        // 更新结果部分
         function updateResultSection() {
             const container = document.getElementById('resultContent');
             const models = aiData[currentVersion].models;
             const dimensions = dimensionDefinitions[currentVersion];
             
-            // 获取可见的模型
-            const visibleModels = models.filter((_, index) => chart ? chart.isDatasetVisible(index) : false);
+            // 获取可见模型
+            const visibleModels = models.filter((_, index) => {
+                const meta = chart ? chart.getDatasetMeta(index) : null;
+                return meta ? !meta.hidden : false;
+            });
             
             if (visibleModels.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary);">请选择至少一个模型进行对比分析</p>';
+                container.innerHTML = '<div style="color: var(--text-secondary);">请选择至少一个模型进行对比分析</div>';
                 return;
             }
             
-            const selectedDimArray = Array.from(selectedDimensions);
-            
-            // 计算每个可见模型的总分
+            // 计算每个可见模型在选中维度的平均分
             const modelScores = visibleModels.map(model => {
-                const filteredScores = selectedDimArray.map(key => {
-                    const dimIndex = dimensions.findIndex(d => d.key === key);
-                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
-                });
-                const totalScore = filteredScores.reduce((a, b) => a + b, 0);
-                const avgScore = totalScore / filteredScores.length;
-                return {
-                    name: model.name,
-                    totalScore: totalScore,
-                    avgScore: avgScore,
-                    color: model.color
-                };
+                const selectedDimensionIndices = Array.from(selectedDimensions).map(key => 
+                    dimensions.findIndex(d => d.key === key)
+                );
+                const scores = selectedDimensionIndices.map(i => model.scores[i]);
+                const avgScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+                return { model, avgScore };
             });
             
-            // 找出得分最高的模型
-            const winner = modelScores.reduce((prev, current) => 
-                (prev.totalScore > current.totalScore) ? prev : current
+            // 找到最高分模型
+            const winner = modelScores.reduce((max, current) => 
+                current.avgScore > max.avgScore ? current : max
             );
             
             container.innerHTML = `
-                <div class="winner-model" style="color: ${winner.color};">🏆 综合能力最强：${winner.name}</div>
-                <div class="winner-score">平均得分：${winner.avgScore.toFixed(1)}/10 | 总得分：${winner.totalScore.toFixed(1)}/${selectedDimensions.size * 10}</div>
-                <p style="margin-top: 15px; color: var(--text-secondary); font-size: 14px;">基于所选 ${selectedDimensions.size} 个维度的综合评估结果</p>
+                <div class="winner-model">🏆 综合表现最佳：${winner.model.name}</div>
+                <div class="winner-score">平均得分：${winner.avgScore.toFixed(1)}/10</div>
             `;
         }
 
@@ -783,12 +733,8 @@
                     const version = btn.dataset.version;
                     if (version !== currentVersion) {
                         currentVersion = version;
-                        
-                        // 更新按钮状态
                         buttons.forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        
-                        // 重新渲染所有组件
                         renderDimensionsPanel();
                         renderChart();
                         renderLegend();
@@ -801,16 +747,13 @@
 
         // 主题切换
         function toggleTheme() {
-            const body = document.body;
+            const body = document.documentElement;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             const button = document.querySelector('.theme-toggle');
             
-            if (body.dataset.theme === 'light') {
-                body.dataset.theme = 'dark';
-                button.textContent = '☀️ 浅色模式';
-            } else {
-                body.dataset.theme = 'light';
-                button.textContent = '🌙 深色模式';
-            }
+            body.setAttribute('data-theme', newTheme);
+            button.textContent = newTheme === 'dark' ? '☀️ 浅色模式' : '🌙 深色模式';
             
             // 重新渲染图表以更新颜色
             if (chart) {
