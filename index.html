@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主流AI模型能力对比</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #6c757d;
+            --border-color: #e9ecef;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 10px;
+            transition: all 0.3s ease;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .container {
+                padding: 30px;
+            }
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 30px;
+            }
+            
+            h1 {
+                font-size: 24px;
+                text-align: left;
+            }
+            
+            .controls {
+                flex-direction: row;
+                gap: 20px;
+                align-items: center;
+            }
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @media (min-width: 768px) {
+            .theme-toggle {
+                padding: 8px 16px;
+                min-height: auto;
+            }
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-color);
+        }
+
+        .version-toggle {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .version-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @media (min-width: 768px) {
+            .version-btn {
+                padding: 8px 16px;
+                min-height: auto;
+            }
+        }
+
+        .version-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-card);
+        }
+
+        .dimensions-panel {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .dimensions-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .dimensions-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        @media (min-width: 480px) {
+            .dimensions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .dimensions-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 15px;
+            }
+        }
+
+        .dimension-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            min-height: 44px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        
+        @media (min-width: 768px) {
+            .dimension-item {
+                gap: 10px;
+                padding: 10px;
+                min-height: auto;
+            }
+        }
+
+        .dimension-checkbox {
+            margin-top: 2px;
+            width: 20px;
+            height: 20px;
+            accent-color: #4ECDC4;
+        }
+        
+        @media (min-width: 768px) {
+            .dimension-checkbox {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        .dimension-content {
+            flex: 1;
+        }
+
+        .dimension-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .dimension-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 600px;
+                margin-bottom: 30px;
+            }
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (min-width: 480px) {
+            .legend {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .legend {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                margin-top: 20px;
+            }
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            min-height: 44px;
+            box-sizing: border-box;
+        }
+        
+        @media (min-width: 768px) {
+            .legend-item {
+                padding: 8px 12px;
+                min-height: auto;
+            }
+        }
+
+        .legend-item:hover {
+            background: var(--border-color);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--bg-card);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (min-width: 480px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-top: 30px;
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h3 {
+            color: var(--text-primary);
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                margin-bottom: 20px;
+            }
+            .section-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+        }
+
+        .result-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            box-shadow: var(--shadow);
+            border: 2px solid var(--primary-color);
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .result-content {
+            font-size: 16px;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .winner-model {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .winner-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        @media (max-width: 768px) {
+            .result-section {
+                margin: 20px 0;
+                padding: 15px;
+            }
+            .result-title {
+                font-size: 18px;
+            }
+            .result-content {
+                font-size: 14px;
+                padding: 15px;
+            }
+        }
+
+        .data-sources {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .sources-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .sources-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .sources-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .sources-links a:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .data-sources {
+                margin-top: 20px;
+                padding: 15px;
+            }
+            .sources-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .sources-links a {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>主流AI模型能力对比分析</h1>
+            <div class="controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 深色模式</button>
+            </div>
+        </div>
+
+        <!-- 1️⃣ 版本选择 -->
+        <div class="section">
+            <div class="section-title">1️⃣ 版本选择：免费/付费</div>
+            <div class="version-toggle">
+                <button class="version-btn active" data-version="free">免费版</button>
+                <button class="version-btn" data-version="paid">付费版</button>
+            </div>
+        </div>
+
+        <!-- 2️⃣ 评估维度选择 -->
+        <div class="section">
+            <div class="section-title">2️⃣ 评估维度选择（请至少选择三项）</div>
+            <div class="dimensions-grid" id="dimensionsGrid">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 3️⃣ 模型选择 -->
+        <div class="section">
+            <div class="section-title">3️⃣ 模型选择（按各家最强模型）</div>
+            <div class="legend" id="legend"></div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="radarChart"></canvas>
+        </div>
+        
+        <!-- 总分计算和最优模型 -->
+        <div class="result-section" id="resultSection">
+            <div class="result-title">📊 分析结果</div>
+            <div class="result-content" id="resultContent">
+                等待选择...
+            </div>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid">
+            <!-- 动态生成 -->
+        </div>
+
+        <!-- 数据来源 -->
+        <div class="data-sources">
+            <div class="sources-title">数据来源：</div>
+            <div class="sources-links">
+                <a href="https://mlcommons.org/en/" target="_blank">MLCommons</a>
+                <a href="https://crfm.stanford.edu/helm/" target="_blank">Stanford HELM</a>
+                <a href="https://chat.lmsys.org/" target="_blank">LMSYS Chatbot Arena</a>
+                <a href="https://paperswithcode.com/" target="_blank">Papers With Code</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 维度定义
+        const dimensionDefinitions = {
+            free: [
+                { key: 'multimodal', name: '多模态', desc: '处理文本、图像、音频等多种输入格式的综合能力' },
+                { key: 'performance', name: '性能测试', desc: '在标准化基准测试中的表现，包括推理、知识和语言能力' },
+                { key: 'usability', name: '易用性', desc: '用户界面友好度、响应速度和交互体验的综合评价' },
+                { key: 'search', name: '搜索质量', desc: '实时信息检索准确性和联网搜索结果的相关性' },
+                { key: 'quota', name: '免费额度', desc: '免费用户每日可使用的消息数量和功能访问限制' },
+                { key: 'region', name: '可用地区', desc: '全球不同国家和地区的服务可访问性和稳定性' }
+            ],
+            paid: [
+                { key: 'multimodal', name: '多模态', desc: '处理文本、图像、音频等多种输入格式的综合能力' },
+                { key: 'performance', name: '性能测试', desc: '在标准化基准测试中的表现，包括推理、知识和语言能力' },
+                { key: 'usability', name: '易用性', desc: '用户界面友好度、响应速度和交互体验的综合评价' },
+                { key: 'search', name: '搜索质量', desc: '实时信息检索准确性和联网搜索结果的相关性' },
+                { key: 'quota', name: '高级额度', desc: '付费用户的使用限制、高级功能访问和优先级支持' },
+                { key: 'region', name: '可用地区', desc: '全球不同国家和地区的服务可访问性和稳定性' }
+            ]
+        };
+
+        // 数据配置
+        const aiData = {
+            free: {
+                models: [
+                    { name: 'GPT', scores: [8, 8.5, 8, 7.5, 7.5, 7], color: '#FF6B6B' },
+                    { name: 'Claude', scores: [6.5, 7.5, 7, 7.5, 7, 5], color: '#4ECDC4' },
+                    { name: 'Gemini', scores: [7.5, 8.5, 7, 7, 8, 6], color: '#45B7D1' },
+                    { name: 'Grok', scores: [7, 8.5, 7, 7, 8, 6.5], color: '#96CEB4' },
+                    { name: 'Perplexity', scores: [6.5, 7, 7.5, 8, 8.5, 6.5], color: '#FFEAA7' },
+                    { name: 'DeepSeek', scores: [6, 8.5, 7, 5.5, 9, 9], color: '#DDA0DD' },
+                    { name: 'Doubao', scores: [8, 6.5, 8.5, 5, 9, 9], color: '#F39C12' }
+                ]
+            },
+            paid: {
+                models: [
+                    { name: 'GPT', scores: [9, 8.5, 8.5, 8.5, 8.5, 7], color: '#FF6B6B' },
+                    { name: 'Claude', scores: [8, 8, 7.5, 8, 7, 5], color: '#4ECDC4' },
+                    { name: 'Gemini', scores: [8.5, 9, 7.5, 8.5, 9, 6], color: '#45B7D1' },
+                    { name: 'Grok', scores: [8, 8.5, 7, 8, 8.5, 6.5], color: '#96CEB4' },
+                    { name: 'Perplexity', scores: [7.5, 8.5, 7.5, 9, 8.5, 6.5], color: '#FFEAA7' },
+                    { name: 'DeepSeek', scores: [6.5, 8, 7, 5.5, 9, 9], color: '#DDA0DD' },
+                    { name: 'Doubao', scores: [8, 6.5, 8.5, 5, 9, 9], color: '#F39C12' }
+                ]
+            }
+        };
+
+        let currentVersion = 'free';
+        let selectedDimensions = new Set(['multimodal', 'performance', 'usability', 'search', 'quota', 'region']);
+        let chart = null;
+
+        // 初始化
+        function init() {
+            renderDimensionsPanel();
+            renderChart();
+            renderLegend();
+            renderStats();
+            setupVersionToggle();
+        }
+
+        // 渲染维度面板
+        function renderDimensionsPanel() {
+            const container = document.getElementById('dimensionsGrid');
+            const dimensions = dimensionDefinitions[currentVersion];
+            
+            container.innerHTML = dimensions.map(dim => `
+                <div class="dimension-item">
+                    <input type="checkbox" class="dimension-checkbox" 
+                           id="dim-${dim.key}" ${selectedDimensions.has(dim.key) ? 'checked' : ''}
+                           onchange="toggleDimension('${dim.key}')">
+                    <div class="dimension-content">
+                        <div class="dimension-name">${dim.name}</div>
+                        <div class="dimension-desc">${dim.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 切换维度
+        function toggleDimension(key) {
+            if (selectedDimensions.has(key)) {
+                if (selectedDimensions.size > 3) {
+                    selectedDimensions.delete(key);
+                } else {
+                    document.getElementById(`dim-${key}`).checked = true;
+                    return;
+                }
+            } else {
+                selectedDimensions.add(key);
+            }
+            renderChart();
+            renderStats();
+            updateResultSection();
+        }
+
+        // 渲染图表
+        function renderChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            const dimensions = dimensionDefinitions[currentVersion];
+            const models = aiData[currentVersion].models;
+            
+            // 获取选中的维度
+            const selectedDimArray = Array.from(selectedDimensions);
+            const labels = selectedDimArray.map(key => {
+                const dim = dimensions.find(d => d.key === key);
+                return dim ? dim.name : key;
+            });
+            
+            // 准备数据集
+            const datasets = models.map(model => {
+                const scores = selectedDimArray.map(key => {
+                    const dimIndex = dimensions.findIndex(d => d.key === key);
+                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
+                });
+                
+                return {
+                    label: model.name,
+                    data: scores,
+                    borderColor: model.color,
+                    backgroundColor: model.color + '20',
+                    pointBackgroundColor: model.color,
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: model.color,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                };
+            });
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#333',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            min: 0,
+                            ticks: {
+                                stepSize: 2,
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            },
+                            angleLines: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            },
+                            pointLabels: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        // 渲染图例
+        function renderLegend() {
+            const container = document.getElementById('legend');
+            const models = aiData[currentVersion].models;
+            
+            container.innerHTML = models.map(model => `
+                <div class="legend-item" onclick="toggleModel('${model.name}')">
+                    <div class="legend-color" style="background-color: ${model.color}"></div>
+                    <span>${model.name}</span>
+                </div>
+            `).join('');
+        }
+
+        // 切换模型显示
+        function toggleModel(modelName) {
+            if (chart) {
+                const datasetIndex = chart.data.datasets.findIndex(dataset => dataset.label === modelName);
+                if (datasetIndex !== -1) {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.hidden = !meta.hidden;
+                    chart.update();
+                }
+            }
+        }
+
+        // 渲染统计信息
+        function renderStats() {
+            const container = document.getElementById('statsGrid');
+            const models = aiData[currentVersion].models;
+            const dimensions = dimensionDefinitions[currentVersion];
+            const selectedDimArray = Array.from(selectedDimensions);
+            
+            // 计算每个模型的平均分
+            const modelStats = models.map(model => {
+                const selectedScores = selectedDimArray.map(key => {
+                    const dimIndex = dimensions.findIndex(d => d.key === key);
+                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
+                });
+                const average = selectedScores.reduce((sum, score) => sum + score, 0) / selectedScores.length;
+                return {
+                    name: model.name,
+                    average: average.toFixed(1),
+                    color: model.color
+                };
+            });
+            
+            // 按平均分排序
+            modelStats.sort((a, b) => b.average - a.average);
+            
+            container.innerHTML = modelStats.map((stat, index) => `
+                <div class="stat-card">
+                    <h3>${stat.name}</h3>
+                    <div class="stat-value" style="color: ${stat.color}">${stat.average}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
+                        排名 #${index + 1}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 更新结果区域
+        function updateResultSection() {
+            const models = aiData[currentVersion].models;
+            const dimensions = dimensionDefinitions[currentVersion];
+            const selectedDimArray = Array.from(selectedDimensions);
+            
+            if (selectedDimArray.length < 3) {
+                document.getElementById('resultContent').innerHTML = '请至少选择3个评估维度';
+                return;
+            }
+            
+            // 计算每个模型的总分
+            const modelScores = models.map(model => {
+                const selectedScores = selectedDimArray.map(key => {
+                    const dimIndex = dimensions.findIndex(d => d.key === key);
+                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
+                });
+                const total = selectedScores.reduce((sum, score) => sum + score, 0);
+                const average = total / selectedScores.length;
+                return {
+                    name: model.name,
+                    total: total.toFixed(1),
+                    average: average.toFixed(1),
+                    color: model.color
+                };
+            });
+            
+            // 找到最高分模型
+            const winner = modelScores.reduce((prev, current) => 
+                parseFloat(current.average) > parseFloat(prev.average) ? current : prev
+            );
+            
+            document.getElementById('resultContent').innerHTML = `
+                <div class="winner-model" style="color: ${winner.color}">
+                    🏆 最优模型：${winner.name}
+                </div>
+                <div class="winner-score">
+                    平均得分：${winner.average}/10
+                </div>
+                <div style="margin-top: 15px; font-size: 14px; color: var(--text-secondary);">
+                    基于所选 ${selectedDimArray.length} 个维度的综合评估结果
+                </div>
+            `;
+        }
+
+        // 设置版本切换
+        function setupVersionToggle() {
+            const buttons = document.querySelectorAll('.version-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const version = btn.dataset.version;
+                    if (version !== currentVersion) {
+                        currentVersion = version;
+                        
+                        // 更新按钮状态
+                        buttons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        // 重新渲染所有组件
+                        renderDimensionsPanel();
+                        renderChart();
+                        renderLegend();
+                        renderStats();
+                        updateResultSection();
+                    }
+                });
+            });
+        }
+
+        // 主题切换
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+            
+            if (body.dataset.theme === 'dark') {
+                body.dataset.theme = 'light';
+                button.textContent = '🌙 深色模式';
+            } else {
+                body.dataset.theme = 'dark';
+                button.textContent = '☀️ 浅色模式';
+            }
+            
+            // 重新渲染图表以更新颜色
+            if (chart) {
+                setTimeout(() => {
+                    renderChart();
+                }, 100);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
