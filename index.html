@@ -84,6 +84,23 @@
             font-size: 16px;
         }
 
+        .github-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .github-link:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
         .theme-toggle {
             position: absolute;
             top: 0;
@@ -388,6 +405,7 @@
             <button class="theme-toggle" onclick="toggleTheme()">🌙 深色模式</button>
             <h1>🤖 AI模型能力对比分析工具</h1>
             <p>基于真实使用体验的多维度AI模型能力评估</p>
+            <a href="https://github.com/ink1ing/ai-model-comparison" target="_blank" class="github-link">📂 GitHub 仓库</a>
         </div>
 
         <!-- 1️⃣ 版本选择 -->
@@ -532,12 +550,7 @@
         // 切换维度
         function toggleDimension(key) {
             if (selectedDimensions.has(key)) {
-                if (selectedDimensions.size > 3) {
-                    selectedDimensions.delete(key);
-                } else {
-                    document.getElementById(`dim-${key}`).checked = true;
-                    return;
-                }
+                selectedDimensions.delete(key);
             } else {
                 selectedDimensions.add(key);
             }
@@ -546,57 +559,56 @@
             updateResultSection();
         }
 
-        // 渲染图表
+        // 渲染雷达图
         function renderChart() {
             const ctx = document.getElementById('radarChart').getContext('2d');
             const dimensions = dimensionDefinitions[currentVersion];
             const models = aiData[currentVersion].models;
             
             // 过滤选中的维度
-            const filteredDimensions = dimensions.filter(dim => selectedDimensions.has(dim.key));
-            const dimensionIndices = filteredDimensions.map(dim => dimensions.findIndex(d => d.key === dim.key));
+            const selectedDimArray = Array.from(selectedDimensions);
+            const labels = selectedDimArray.map(key => {
+                const dim = dimensions.find(d => d.key === key);
+                return dim ? dim.name : key;
+            });
             
-            const datasets = models.map(model => ({
-                label: model.name,
-                data: dimensionIndices.map(i => model.scores[i]),
-                backgroundColor: model.color + '20',
-                borderColor: model.color,
-                borderWidth: 2,
-                pointBackgroundColor: model.color,
-                pointBorderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#21262d' : '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 5,
-                pointHoverRadius: 7,
-                tension: 0.1
-            }));
-
             if (chart) {
                 chart.destroy();
             }
-
+            
+            const datasets = models.map(model => {
+                const filteredScores = selectedDimArray.map(key => {
+                    const dimIndex = dimensions.findIndex(d => d.key === key);
+                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
+                });
+                
+                return {
+                    label: model.name,
+                    data: filteredScores,
+                    borderColor: model.color,
+                    backgroundColor: model.color + '20',
+                    pointBackgroundColor: model.color,
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: model.color,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                };
+            });
+            
             chart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: filteredDimensions.map(dim => dim.name),
+                    labels: labels,
                     datasets: datasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            borderColor: '#fff',
-                            borderWidth: 1,
-                            cornerRadius: 6,
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.parsed.r}/10`;
-                                }
-                            }
+                        legend: {
+                            display: false
                         }
                     },
                     scales: {
@@ -606,28 +618,35 @@
                             min: 0,
                             ticks: {
                                 stepSize: 2,
-                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#8b949e' : '#666',
-                                font: { size: 12 }
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+                                font: {
+                                    size: 12
+                                }
                             },
                             grid: {
-                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#30363d' : '#e0e0e0'
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
                             },
                             angleLines: {
-                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#30363d' : '#e0e0e0'
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
                             },
                             pointLabels: {
-                                color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f0f6fc' : '#2c3e50',
-                                font: { size: 14, weight: 'bold' }
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
                             }
                         }
+                    },
+                    interaction: {
+                        intersect: false
                     }
                 }
             });
-            
+
             // 默认隐藏所有模型
-            models.forEach((_, index) => {
-                const meta = chart.getDatasetMeta(index);
-                meta.hidden = true;
+            chart.data.datasets.forEach((dataset, index) => {
+                chart.setDatasetVisibility(index, false);
             });
             chart.update();
         }
@@ -638,9 +657,10 @@
             const models = aiData[currentVersion].models;
             
             container.innerHTML = models.map((model, index) => {
-                const isHidden = chart ? chart.getDatasetMeta(index).hidden : true;
+                const isVisible = chart ? chart.isDatasetVisible(index) : false;
+                const opacity = isVisible ? '1' : '0.5';
                 return `
-                    <div class="legend-item" onclick="toggleModel(${index})" style="opacity: ${isHidden ? '0.5' : '1'}">
+                    <div class="legend-item" onclick="toggleModel(${index})" style="opacity: ${opacity}">
                         <div class="legend-color" style="background-color: ${model.color}"></div>
                         <span>${model.name}</span>
                     </div>
@@ -650,125 +670,157 @@
 
         // 切换模型显示
         function toggleModel(index) {
-            const meta = chart.getDatasetMeta(index);
-            meta.hidden = !meta.hidden;
-            chart.update();
-            const legendItem = document.querySelectorAll('.legend-item')[index];
-            legendItem.style.opacity = meta.hidden ? '0.5' : '1';
+            if (chart) {
+                const isVisible = chart.isDatasetVisible(index);
+                chart.setDatasetVisibility(index, !isVisible);
+                chart.update();
+                renderLegend();
+                renderStats();
+                updateResultSection();
+            }
         }
 
         // 渲染统计信息
         function renderStats() {
             const container = document.getElementById('statsGrid');
             const models = aiData[currentVersion].models;
-            const selectedCount = selectedDimensions.size;
-            const totalScores = models.flatMap(m => m.scores.filter((_, i) => {
-                const dim = dimensionDefinitions[currentVersion][i];
-                return selectedDimensions.has(dim.key);
-            }));
-            const maxScore = Math.max(...totalScores);
-            const avgScore = (totalScores.reduce((a, b) => a + b, 0) / totalScores.length).toFixed(1);
+            const dimensions = dimensionDefinitions[currentVersion];
             
-            container.innerHTML = `
-                <div class="stat-card">
-                    <h3>评估维度</h3>
-                    <div class="stat-value">${selectedCount}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>AI模型数量</h3>
-                    <div class="stat-value">${models.length}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>最高分</h3>
-                    <div class="stat-value">${maxScore}.0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>平均分</h3>
-                    <div class="stat-value">${avgScore}</div>
-                </div>
-            `;
+            // 计算可见模型的统计信息
+            const visibleModels = models.filter((_, index) => chart ? chart.isDatasetVisible(index) : false);
+            const selectedDimArray = Array.from(selectedDimensions);
             
-            // 更新结果区域
-            updateResultSection();
-        }
-        
-        // 更新结果区域
-        function updateResultSection() {
-            const resultContent = document.getElementById('resultContent');
-            const models = aiData[currentVersion].models;
-            
-            if (selectedDimensions.size < 3) {
-                resultContent.innerHTML = '请至少选择三项评估维度...';
+            if (visibleModels.length === 0) {
+                container.innerHTML = '<div class="stat-card"><h3>请选择模型</h3><div class="stat-value">-</div></div>';
                 return;
             }
             
-            // 计算每个模型的总分
-            const modelScores = models.map(model => {
-                let totalScore = 0;
-                let count = 0;
-                
-                dimensionDefinitions[currentVersion].forEach((dim, index) => {
-                    if (selectedDimensions.has(dim.key)) {
-                        totalScore += model.scores[index];
-                        count++;
-                    }
+            // 计算平均分
+            const avgScores = visibleModels.map(model => {
+                const filteredScores = selectedDimArray.map(key => {
+                    const dimIndex = dimensions.findIndex(d => d.key === key);
+                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
                 });
-                
+                const avg = filteredScores.reduce((a, b) => a + b, 0) / filteredScores.length;
+                return { name: model.name, avg: avg.toFixed(1) };
+            });
+            
+            // 找出最高分和最低分
+            const maxScore = Math.max(...avgScores.map(s => parseFloat(s.avg)));
+            const minScore = Math.min(...avgScores.map(s => parseFloat(s.avg)));
+            const maxModel = avgScores.find(s => parseFloat(s.avg) === maxScore);
+            const minModel = avgScores.find(s => parseFloat(s.avg) === minScore);
+            
+            container.innerHTML = `
+                <div class="stat-card">
+                    <h3>参与对比模型数</h3>
+                    <div class="stat-value">${visibleModels.length}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>评估维度数</h3>
+                    <div class="stat-value">${selectedDimensions.size}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>最高平均分</h3>
+                    <div class="stat-value">${maxModel ? maxModel.avg : '-'}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>最低平均分</h3>
+                    <div class="stat-value">${minModel ? minModel.avg : '-'}</div>
+                </div>
+            `;
+        }
+
+        // 更新结果区域
+        function updateResultSection() {
+            const container = document.getElementById('resultContent');
+            const models = aiData[currentVersion].models;
+            const dimensions = dimensionDefinitions[currentVersion];
+            
+            // 获取可见的模型
+            const visibleModels = models.filter((_, index) => chart ? chart.isDatasetVisible(index) : false);
+            
+            if (visibleModels.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary);">请选择至少一个模型进行对比分析</p>';
+                return;
+            }
+            
+            const selectedDimArray = Array.from(selectedDimensions);
+            
+            // 计算每个可见模型的总分
+            const modelScores = visibleModels.map(model => {
+                const filteredScores = selectedDimArray.map(key => {
+                    const dimIndex = dimensions.findIndex(d => d.key === key);
+                    return dimIndex !== -1 ? model.scores[dimIndex] : 0;
+                });
+                const totalScore = filteredScores.reduce((a, b) => a + b, 0);
+                const avgScore = totalScore / filteredScores.length;
                 return {
                     name: model.name,
                     totalScore: totalScore,
-                    averageScore: (totalScore / count).toFixed(1),
+                    avgScore: avgScore,
                     color: model.color
                 };
             });
             
             // 找出得分最高的模型
-            modelScores.sort((a, b) => b.averageScore - a.averageScore);
-            const winner = modelScores[0];
+            const winner = modelScores.reduce((prev, current) => 
+                (prev.totalScore > current.totalScore) ? prev : current
+            );
             
-            resultContent.innerHTML = `
-                <div class="winner-model" style="color: ${winner.color}">${winner.name} 模型得分最高</div>
-                <div class="winner-score">总分: ${winner.totalScore} | 平均分: ${winner.averageScore}/10</div>
-                <div style="margin-top: 15px; font-size: 14px; color: var(--text-secondary)">
-                    基于当前选择的 ${selectedDimensions.size} 项评估维度计算
-                </div>
+            container.innerHTML = `
+                <div class="winner-model" style="color: ${winner.color};">🏆 综合能力最强：${winner.name}</div>
+                <div class="winner-score">平均得分：${winner.avgScore.toFixed(1)}/10 | 总得分：${winner.totalScore.toFixed(1)}/${selectedDimensions.size * 10}</div>
+                <p style="margin-top: 15px; color: var(--text-secondary); font-size: 14px;">基于所选 ${selectedDimensions.size} 个维度的综合评估结果</p>
             `;
         }
 
         // 设置版本切换
         function setupVersionToggle() {
-            document.querySelectorAll('.version-btn').forEach(btn => {
+            const buttons = document.querySelectorAll('.version-btn');
+            buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.version-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentVersion = btn.dataset.version;
-                    selectedDimensions = new Set(['multimodal', 'performance', 'usability', 'search', 'quota', 'region']);
-                    renderDimensionsPanel();
-                    renderChart();
-                    renderLegend();
-                    renderStats();
-                    updateResultSection();
+                    const version = btn.dataset.version;
+                    if (version !== currentVersion) {
+                        currentVersion = version;
+                        
+                        // 更新按钮状态
+                        buttons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        // 重新渲染所有组件
+                        renderDimensionsPanel();
+                        renderChart();
+                        renderLegend();
+                        renderStats();
+                        updateResultSection();
+                    }
                 });
             });
         }
 
         // 主题切换
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
             
-            const themeBtn = document.querySelector('.theme-toggle');
-            themeBtn.textContent = newTheme === 'dark' ? '☀️ 浅色模式' : '🌙 深色模式';
+            if (body.dataset.theme === 'light') {
+                body.dataset.theme = 'dark';
+                button.textContent = '☀️ 浅色模式';
+            } else {
+                body.dataset.theme = 'light';
+                button.textContent = '🌙 深色模式';
+            }
             
-            // 更新图表颜色
+            // 重新渲染图表以更新颜色
             if (chart) {
-                setTimeout(() => renderChart(), 300);
+                renderChart();
+                renderLegend();
             }
         }
 
-        // 启动应用
-        init();
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
